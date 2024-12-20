@@ -1,30 +1,17 @@
-﻿using FluentAssertions;
+﻿using System.Threading.Tasks;
+using FluentAssertions;
 
 using Mongo.Migration.Documents;
 using Mongo.Migration.Services;
-
 using MongoDB.Bson.Serialization;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.MongoDB
 {
-    [TestFixture]
+    
     internal class MongoRegistrator_when_registrating : IntegrationTest
     {
-        [SetUp]
-        public void SetUp()
-        {
-            this.OnSetUp();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            this.Dispose();
-        }
-
-        [Test]
+        [Fact]
         public void Then_serializer_is_registered()
         {
             // Arrange 

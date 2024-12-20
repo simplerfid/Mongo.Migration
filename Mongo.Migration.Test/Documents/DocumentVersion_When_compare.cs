@@ -1,12 +1,11 @@
 ﻿using FluentAssertions;
 
 using Mongo.Migration.Documents;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Documents
 {
-    [TestFixture]
+    
     public class DocumentVersion_When_compare
     {
         private readonly DocumentVersion equalLowerVersion = new DocumentVersion("0.0.1");
@@ -15,7 +14,7 @@ namespace Mongo.Migration.Test.Documents
 
         private readonly DocumentVersion lowerVersion = new DocumentVersion("0.0.1");
 
-        [Test]
+        [Fact]
         public void If_higherVersion_lte_equalLowerVersion_Then_false()
         {
             bool result = this.higherVersion <= this.lowerVersion;
@@ -23,7 +22,7 @@ namespace Mongo.Migration.Test.Documents
             result.Should().BeFalse();
         }
 
-        [Test]
+        [Fact]
         public void If_lowerVersion_gt_higherVersion_Then_false()
         {
             bool result = this.lowerVersion > this.higherVersion;
@@ -31,7 +30,7 @@ namespace Mongo.Migration.Test.Documents
             result.Should().BeFalse();
         }
 
-        [Test]
+        [Fact]
         public void If_lowerVersion_gte_equalLowerVersion_Then_true()
         {
             bool result = this.lowerVersion >= this.equalLowerVersion;
@@ -39,7 +38,7 @@ namespace Mongo.Migration.Test.Documents
             result.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public void If_lowerVersion_gte_higherVersion_Then_false()
         {
             bool result = this.lowerVersion >= this.higherVersion;
@@ -47,7 +46,7 @@ namespace Mongo.Migration.Test.Documents
             result.Should().BeFalse();
         }
 
-        [Test]
+        [Fact]
         public void If_lowerVersion_lt_higherVersion_Then_true()
         {
             bool result = this.lowerVersion < this.higherVersion;
@@ -55,7 +54,7 @@ namespace Mongo.Migration.Test.Documents
             result.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public void If_lowerVersion_lte_equalLowerVersion_Then_true()
         {
             bool result = this.lowerVersion <= this.equalLowerVersion;

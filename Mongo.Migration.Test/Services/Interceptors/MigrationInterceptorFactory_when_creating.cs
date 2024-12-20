@@ -1,30 +1,17 @@
 ﻿using System;
-
+using System.Threading.Tasks;
 using FluentAssertions;
 
 using Mongo.Migration.Services.Interceptors;
 using Mongo.Migration.Test.TestDoubles;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Services.Interceptors
 {
-    [TestFixture]
+    
     internal class MigrationInterceptorFactory_when_creating : IntegrationTest
     {
-        [SetUp]
-        public void SetUp()
-        {
-            this.OnSetUp();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            this.Dispose();
-        }
-
-        [Test]
+        [Fact]
         public void If_type_is_assignable_to_document_Then_interceptor_is_created()
         {
             // Arrange
@@ -37,7 +24,7 @@ namespace Mongo.Migration.Test.Services.Interceptors
             interceptor.ValueType.Should().Be<TestDocumentWithOneMigration>();
         }
 
-        [Test]
+        [Fact]
         public void If_type_is_not_assignable_to_document_Then_exception_is_thrown()
         {
             // Arrange
@@ -50,7 +37,7 @@ namespace Mongo.Migration.Test.Services.Interceptors
             act.Should().ThrowExactly<ArgumentException>();
         }
 
-        [Test]
+        [Fact]
         public void If_type_is_null_Then_exception_is_thrown()
         {
             // Arrange
@@ -62,5 +49,6 @@ namespace Mongo.Migration.Test.Services.Interceptors
             // Assert
             act.Should().ThrowExactly<ArgumentNullException>();
         }
+        
     }
 }

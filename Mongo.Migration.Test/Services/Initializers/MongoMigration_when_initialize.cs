@@ -1,26 +1,18 @@
 ﻿using System;
-
 using FluentAssertions;
 
 using Mongo.Migration.Exceptions;
 using Mongo.Migration.Startup.Static;
-
 using NSubstitute;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Services.Initializers
 {
-    [TestFixture]
+    
     public class MongoMigration_when_initialize
     {
-        [TearDown]
-        public void TearDown()
-        {
-            MongoMigrationClient.Reset();
-        }
-
-        [Test]
+        
+        [Fact]
         public void When_inizialize_twice_Then_throw_exception()
         {
             // Arrange

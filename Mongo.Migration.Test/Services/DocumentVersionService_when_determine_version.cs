@@ -1,35 +1,25 @@
 ﻿using System;
-
+using System.Threading.Tasks;
 using FluentAssertions;
 
 using Mongo.Migration.Exceptions;
 using Mongo.Migration.Services;
 using Mongo.Migration.Test.TestDoubles;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Services
 {
-    [TestFixture]
+    
     internal class DocumentVersionService_when_determine_version : IntegrationTest
     {
         private IDocumentVersionService _service;
 
-        [SetUp]
-        public void SetUp()
+        public DocumentVersionService_when_determine_version()
         {
-            this.OnSetUp();
-
             this._service = this._components.Get<IDocumentVersionService>();
         }
-
-        [TearDown]
-        public void TearDown()
-        {
-            this.Dispose();
-        }
-
-        [Test]
+        
+        [Fact]
         public void When_document_has_current_version_Then_current_version_is_set()
         {
             // Arrange
@@ -42,7 +32,7 @@ namespace Mongo.Migration.Test.Services
             document.Version.Should().Be("0.0.1");
         }
 
-        [Test]
+        [Fact]
         public void When_document_has_highest_version_Then_highest_version_is_set()
         {
             // Arrange
@@ -55,7 +45,7 @@ namespace Mongo.Migration.Test.Services
             document.Version.Should().Be("0.0.2");
         }
 
-        [Test]
+        [Fact]
         public void When_document_has_version_that_should_not_be_Then_throw_exception()
         {
             // Arrange

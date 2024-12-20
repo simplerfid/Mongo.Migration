@@ -1,15 +1,14 @@
 ﻿using FluentAssertions;
 
 using Mongo.Migration.Test.TestDoubles;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Migrations.Document
 {
-    [TestFixture]
+    
     public class DocumentMigration_when_creating
     {
-        [Test]
+        [Fact]
         public void Then_migration_has_type_testClass()
         {
             // Arrange Act
@@ -19,7 +18,7 @@ namespace Mongo.Migration.Test.Migrations.Document
             migration.Type.Should().Be(typeof(TestDocumentWithOneMigration));
         }
 
-        [Test]
+        [Fact]
         public void Then_migration_have_version()
         {
             // Arrange Act
@@ -29,7 +28,7 @@ namespace Mongo.Migration.Test.Migrations.Document
             migration.Version.Should().Be("0.0.1");
         }
 
-        [Test]
+        [Fact]
         public void Then_migration_should_be_created()
         {
             // Arrange Act

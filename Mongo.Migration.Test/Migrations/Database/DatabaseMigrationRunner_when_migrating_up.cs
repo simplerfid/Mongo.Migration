@@ -1,33 +1,33 @@
-﻿using FluentAssertions;
+﻿using System.Threading.Tasks;
+using FluentAssertions;
 
 using Mongo.Migration.Documents;
 using Mongo.Migration.Migrations.Database;
 using Mongo.Migration.Test.TestDoubles;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Migrations.Database
 {
-    [TestFixture]
+    
     internal class DatabaseMigrationRunner_when_migrating_up : DatabaseIntegrationTest
     {
         private IDatabaseMigrationRunner _runner;
 
-        [SetUp]
-        public void SetUp()
+        
+        public async Task SetUpAsync()
         {
-            base.OnSetUp(DocumentVersion.Empty());
+            await base.OnSetUpAsync(DocumentVersion.Empty());
 
             this._runner = this._components.Get<IDatabaseMigrationRunner>();
         }
 
-        [TearDown]
-        public void TearDown()
+        
+        public async Task TearDown()
         {
-            this.Dispose();
+            await this.DisposeAsync();
         }
 
-        [Test]
+        [Fact]
         public void When_database_has_no_migrations_Then_all_migrations_are_used()
         {
             // Act
@@ -41,7 +41,7 @@ namespace Mongo.Migration.Test.Migrations.Database
             migrations[2].Version.ToString().Should().BeEquivalentTo("0.0.3");
         }
 
-        [Test]
+        [Fact]
         public void When_database_has_migrations_Then_latest_migrations_are_used()
         {
             // Arrange
@@ -56,7 +56,7 @@ namespace Mongo.Migration.Test.Migrations.Database
             migrations[2].Version.ToString().Should().BeEquivalentTo("0.0.3");
         }
 
-        [Test]
+        [Fact]
         public void When_database_has_latest_version_Then_nothing_happens()
         {
             // Arrange

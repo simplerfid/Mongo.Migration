@@ -1,35 +1,35 @@
-﻿using FluentAssertions;
+﻿using System.Threading.Tasks;
+using FluentAssertions;
 
 using Mongo.Migration.Documents;
 using Mongo.Migration.Migrations.Database;
 using Mongo.Migration.Test.TestDoubles;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Migrations.Database
 {
-    [TestFixture]
+    
     internal class DatabaseMigrationRunner_when_migrating_down : DatabaseIntegrationTest
     {
         private IDatabaseMigrationRunner _runner;
 
-        protected override void OnSetUp(DocumentVersion databaseMigrationVersion)
+        protected override async Task OnSetUpAsync(DocumentVersion databaseMigrationVersion)
         {
-            base.OnSetUp(databaseMigrationVersion);
+            await base.OnSetUpAsync(databaseMigrationVersion);
 
             this._runner = this._components.Get<IDatabaseMigrationRunner>();
         }
 
-        [TearDown]
-        public void TearDown()
+        
+        public async Task TearDownAsync()
         {
-            this.Dispose();
+            await DisposeAsync();
         }
 
-        [Test]
-        public void When_database_has_migrations_Then_down_all_migrations()
+        [Fact]
+        public async Task When_database_has_migrations_Then_down_all_migrations()
         {
-            this.OnSetUp(DocumentVersion.Default());
+            await this.OnSetUpAsync(DocumentVersion.Default());
 
             // Arrange
             this.InsertMigrations(
@@ -48,10 +48,10 @@ namespace Mongo.Migration.Test.Migrations.Database
             migrations.Should().BeEmpty();
         }
 
-        [Test]
-        public void When_database_has_migrations_Then_down_to_selected_migration()
+        [Fact]
+        public async Task When_database_has_migrations_Then_down_to_selected_migration()
         {
-            this.OnSetUp(new DocumentVersion("0.0.1"));
+            await this.OnSetUpAsync(new DocumentVersion("0.0.1"));
 
             // Arrange
             this.InsertMigrations(

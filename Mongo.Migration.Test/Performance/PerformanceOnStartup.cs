@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
+using System.Threading.Tasks;
 using FluentAssertions;
 
 using Mongo.Migration.Startup.Static;
+using Mongo.Migration.Test.Core;
 using Mongo.Migration.Test.TestDoubles;
-
-using Mongo2Go;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Performance
 {
-    [TestFixture]
-    public class PerformanceTestOnStartup
+    
+    public class PerformanceTestOnStartup : IAsyncLifetime
     {
         private const int DOCUMENT_COUNT = 10000;
 
@@ -28,25 +26,24 @@ namespace Mongo.Migration.Test.Performance
         private const int TOLERANCE_MS = 2800;
 
         private MongoClient _client;
+        
+        protected MongoDbTestContainer _container;
 
-        private MongoDbRunner _runner;
+        
+        public async Task InitializeAsync()
+        {
+            _container = new MongoDbTestContainer();
+            await _container.InitializeAsync();
+            this._client = new MongoClient(_container.ConnectionString);
+        }
 
-        [TearDown]
-        public void TearDown()
+        public async Task DisposeAsync()
         {
             MongoMigrationClient.Reset();
             this._client = null;
-            this._runner.Dispose();
         }
-
-        [SetUp]
-        public void SetUp()
-        {
-            this._runner = MongoDbRunner.Start();
-            this._client = new MongoClient(this._runner.ConnectionString);
-        }
-
-        [Test]
+        
+        [Fact]
         public void When_migrating_number_of_documents()
         {
             // Arrange
@@ -69,7 +66,6 @@ namespace Mongo.Migration.Test.Performance
             this.InsertMany(DOCUMENT_COUNT, true);
             var swWithMigration = new Stopwatch();
             swWithMigration.Start();
-            MongoMigrationClient.Initialize(this._client);
             swWithMigration.Stop();
 
             this.ClearCollection();
@@ -129,5 +125,6 @@ namespace Mongo.Migration.Test.Performance
         {
             this._client.GetDatabase(DATABASE_NAME).DropCollection(COLLECTION_NAME);
         }
+        
     }
 }
