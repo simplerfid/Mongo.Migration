@@ -1,15 +1,14 @@
 ﻿using FluentAssertions;
 
 using Mongo.Migration.Documents;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Documents
 {
-    [TestFixture]
+    
     public class DocumentVersion_When_casting
     {
-        [Test]
+        [Fact]
         public void If_implicit_string_to_version_Then_cast_should_work()
         {
             DocumentVersion version = "1.0.2";
@@ -17,7 +16,7 @@ namespace Mongo.Migration.Test.Documents
             version.ToString().Should().Be("1.0.2");
         }
 
-        [Test]
+        [Fact]
         public void If_implicit_version_to_string_Then_cast_should_work()
         {
             var version = new DocumentVersion("1.0.2");

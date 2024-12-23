@@ -1,15 +1,14 @@
 ﻿using FluentAssertions;
 
 using Mongo.Migration.Documents;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Documents
 {
-    [TestFixture]
+    
     public class Document_when_creating
     {
-        [Test]
+        [Fact]
         public void Then_document_can_be_created()
         {
             // Arrange Act
@@ -19,7 +18,7 @@ namespace Mongo.Migration.Test.Documents
             document.Should().BeOfType<Document>();
         }
 
-        [Test]
+        [Fact]
         public void Then_document_has_a_version()
         {
             // Arrange 

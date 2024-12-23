@@ -1,36 +1,26 @@
 ﻿using System.Linq;
-
+using System.Threading.Tasks;
 using FluentAssertions;
 
 using Mongo.Migration.Migrations.Document;
 using Mongo.Migration.Test.TestDoubles;
 
 using MongoDB.Bson;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Migrations.Document
 {
-    [TestFixture]
+    
     internal class DocumentMigrationRunner_when_migrating_down : IntegrationTest
     {
         private IDocumentMigrationRunner _runner;
 
-        [SetUp]
-        public void SetUp()
+        public DocumentMigrationRunner_when_migrating_down()
         {
-            this.OnSetUp();
-
-            this._runner = this._components.Get<IDocumentMigrationRunner>();
+            _runner = this._components.Get<IDocumentMigrationRunner>();
         }
-
-        [TearDown]
-        public void TearDown()
-        {
-            this.Dispose();
-        }
-
-        [Test]
+        
+        [Fact]
         public void When_migrating_down_Then_all_migrations_are_used()
         {
             // Arrange
@@ -48,7 +38,7 @@ namespace Mongo.Migration.Test.Migrations.Document
             document.Values.ToList()[0].AsString.Should().Be("0.0.0");
         }
 
-        [Test]
+        [Fact]
         public void When_document_has_Then_all_migrations_are_used_to_that_version()
         {
             // Arrange

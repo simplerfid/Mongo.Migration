@@ -1,27 +1,24 @@
 ﻿using System.Linq;
-
+using System.Threading.Tasks;
 using FluentAssertions;
 
 using Mongo.Migration.Migrations.Locators;
 using Mongo.Migration.Test.TestDoubles;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Migrations.Locators
 {
-    [TestFixture]
+    
     public class TypeMigrationLocator_when_locate
     {
         private TypeMigrationLocator _locator;
 
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        public TypeMigrationLocator_when_locate()
         {
-            // Arrange
             this._locator = new TypeMigrationLocator();
         }
-
-        [Test]
+        
+        [Fact]
         public void When_document_has_one_migration_Then_migrations_count_should_be_one()
         {
             // Act
@@ -31,7 +28,7 @@ namespace Mongo.Migration.Test.Migrations.Locators
             result.Count().Should().Be(1);
         }
 
-        [Test]
+        [Fact]
         public void When_document_has_two_migration_Then_migrations_count_should_be_two()
         {
             // Act
@@ -41,7 +38,7 @@ namespace Mongo.Migration.Test.Migrations.Locators
             result.Count().Should().Be(2);
         }
 
-        [Test]
+        [Fact]
         public void When_get_latest_version_of_migrations()
         {
             // Act
@@ -51,7 +48,7 @@ namespace Mongo.Migration.Test.Migrations.Locators
             version.Should().Be("0.0.2");
         }
 
-        [Test]
+        [Fact]
         public void When_get_migrations_gt_and_equal_version()
         {
             // Act
@@ -62,7 +59,7 @@ namespace Mongo.Migration.Test.Migrations.Locators
             result[1].Should().BeOfType<TestDocumentWithTwoMigration_0_0_2>();
         }
 
-        [Test]
+        [Fact]
         public void When_get_migrations_gt_version()
         {
             // Act

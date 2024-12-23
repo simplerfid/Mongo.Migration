@@ -1,38 +1,39 @@
 ﻿using System;
-
+using System.Threading.Tasks;
 using Mongo.Migration.Startup;
 using Mongo.Migration.Startup.Static;
-
-using Mongo2Go;
+using Mongo.Migration.Test.Core;
 
 using MongoDB.Driver;
+using Xunit;
 
 namespace Mongo.Migration.Test
 {
-    public class IntegrationTest : IDisposable
+    public class IntegrationTest : IAsyncLifetime
     {
         protected IMongoClient _client;
 
         protected IComponentRegistry _components;
 
-        protected MongoDbRunner _mongoToGoRunner;
+        protected MongoDbTestContainer _container;
 
-        public void Dispose()
+        public async Task InitializeAsync()
         {
-            this._mongoToGoRunner?.Dispose();
+            _container = new MongoDbTestContainer();
+            await _container.InitializeAsync();
+            _client = new MongoClient(_container.ConnectionString);
+
+            _client.GetDatabase("PerformanceTest").CreateCollection("Test");
+
+            _components = new ComponentRegistry(
+                new MongoMigrationSettings
+                    { ConnectionString = _container.ConnectionString, Database = "PerformanceTest" });
+            _components.RegisterComponents(this._client);
         }
 
-        protected void OnSetUp()
+        public async Task DisposeAsync()
         {
-            this._mongoToGoRunner = MongoDbRunner.Start();
-            this._client = new MongoClient(this._mongoToGoRunner.ConnectionString);
-
-            this._client.GetDatabase("PerformanceTest").CreateCollection("Test");
-
-            this._components = new ComponentRegistry(
-                new MongoMigrationSettings
-                    { ConnectionString = this._mongoToGoRunner.ConnectionString, Database = "PerformanceTest" });
-            this._components.RegisterComponents(this._client);
+            await _container?.DisposeAsync();
         }
     }
 }

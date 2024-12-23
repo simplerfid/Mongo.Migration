@@ -2,15 +2,14 @@
 
 using Mongo.Migration.Migrations.Database;
 using Mongo.Migration.Test.TestDoubles;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Migrations.Database
 {
-    [TestFixture]
+    
     public class DatabaseMigration_when_creating
     {
-        [Test]
+        [Fact]
         public void Then_migration_has_type_DatabaseMigration()
         {
             // Arrange Act
@@ -20,7 +19,7 @@ namespace Mongo.Migration.Test.Migrations.Database
             migration.Type.Should().Be(typeof(DatabaseMigration));
         }
 
-        [Test]
+        [Fact]
         public void Then_migration_have_version()
         {
             // Arrange Act
@@ -30,7 +29,7 @@ namespace Mongo.Migration.Test.Migrations.Database
             migration.Version.Should().Be("0.0.1");
         }
 
-        [Test]
+        [Fact]
         public void Then_migration_should_be_created()
         {
             // Arrange Act

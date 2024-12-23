@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Threading.Tasks;
+using FluentAssertions;
 
 using Mongo.Migration.Documents;
 using Mongo.Migration.Documents.Serializers;
@@ -6,17 +7,21 @@ using Mongo.Migration.Documents.Serializers;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
-
-using NUnit.Framework;
+using Xunit;
 
 namespace Mongo.Migration.Test.Documents.Serializers
 {
-    [TestFixture]
+    
     public class DocumentVersionSerializer_when_serialize_and_deserialize
     {
         private DocumentVersionSerializer _serializer;
 
-        [Test]
+        public DocumentVersionSerializer_when_serialize_and_deserialize()
+        {
+            this._serializer = new DocumentVersionSerializer();
+        }
+        
+        [Fact]
         public void Then_version_is_deserialized_correct()
         {
             // Arrange 
@@ -34,7 +39,7 @@ namespace Mongo.Migration.Test.Documents.Serializers
             result.Should().Be("0.1.1");
         }
 
-        [Test]
+        [Fact]
         public void Then_version_is_serialized_correct()
         {
             // Arrange 
@@ -51,10 +56,10 @@ namespace Mongo.Migration.Test.Documents.Serializers
             document.ToString().Should().Be("{ \"version\" : \"0.0.1\" }");
         }
 
-        [SetUp]
+        
         public void SetUp()
         {
-            this._serializer = new DocumentVersionSerializer();
+            
         }
 
         private static BsonDocumentReader CreateVersionReader(BsonDocument document)
