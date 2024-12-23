@@ -1,38 +1,35 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
-
+using Microsoft.Extensions.DependencyInjection;
 using Mongo.Migration.Documents;
 using Mongo.Migration.Migrations.Database;
+using Mongo.Migration.Startup;
 using Mongo.Migration.Test.TestDoubles;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Mongo.Migration.Test.Migrations.Database
 {
     
-    internal class DatabaseMigrationRunner_when_migrating_down : DatabaseIntegrationTest
+    public class DatabaseMigrationRunner_when_migrating_down : IntegrationBaseTest
     {
-        private IDatabaseMigrationRunner _runner;
-
-        protected override async Task OnSetUpAsync(DocumentVersion databaseMigrationVersion)
-        {
-            await base.OnSetUpAsync(databaseMigrationVersion);
-
-            this._runner = this._components.Get<IDatabaseMigrationRunner>();
-        }
-
+        private const string MigrationsCollectionName = "_migrations";
         
-        public async Task TearDownAsync()
-        {
-            await DisposeAsync();
-        }
+        protected virtual string DatabaseName { get; set; } = "DatabaseMigration";
 
+        protected virtual string CollectionName { get; set; } = "Test";
+        
         [Fact]
         public async Task When_database_has_migrations_Then_down_all_migrations()
         {
-            await this.OnSetUpAsync(DocumentVersion.Default());
-
+            var settings = ServiceProvider.GetRequiredService<IMongoMigrationSettings>();
+            settings.DatabaseMigrationVersion = DocumentVersion.Default();
+            
             // Arrange
-            this.InsertMigrations(
+            await this.InsertMigrations(
                 new DatabaseMigration[]
                 {
                     new TestDatabaseMigration_0_0_1(),
@@ -41,7 +38,9 @@ namespace Mongo.Migration.Test.Migrations.Database
                 });
 
             // Act
-            this._runner.Run(this._db);
+            var database = Client.GetDatabase(DatabaseName);
+            
+            ServiceProvider.GetRequiredService<IDatabaseMigrationRunner>().Run(database);
 
             // Assert
             var migrations = this.GetMigrationHistory();
@@ -51,10 +50,13 @@ namespace Mongo.Migration.Test.Migrations.Database
         [Fact]
         public async Task When_database_has_migrations_Then_down_to_selected_migration()
         {
-            await this.OnSetUpAsync(new DocumentVersion("0.0.1"));
+            var settings = ServiceProvider.GetRequiredService<IMongoMigrationSettings>();
+            settings.DatabaseMigrationVersion = new DocumentVersion("0.0.1");
+
+            var database = Client.GetDatabase(DatabaseName);
 
             // Arrange
-            this.InsertMigrations(
+            await this.InsertMigrations(
                 new DatabaseMigration[]
                 {
                     new TestDatabaseMigration_0_0_1(),
@@ -63,12 +65,31 @@ namespace Mongo.Migration.Test.Migrations.Database
                 });
 
             // Act
-            this._runner.Run(this._db);
+            
+            ServiceProvider.GetRequiredService<IDatabaseMigrationRunner>().Run(database);
 
             // Assert
             var migrations = this.GetMigrationHistory();
             migrations.Should().NotBeEmpty();
             migrations.Should().OnlyContain(m => m.Version == "0.0.1");
         }
+        
+        #region private region
+
+        protected async Task InsertMigrations(IEnumerable<DatabaseMigration> migrations)
+        {
+            var database = Client.GetDatabase(DatabaseName);
+            var list = migrations.Select(m => new BsonDocument { { "MigrationId", m.GetType().ToString() }, { "Version", m.Version.ToString() } });
+            await database.GetCollection<BsonDocument>(MigrationsCollectionName).InsertManyAsync(list);
+        }
+
+        protected List<MigrationHistory> GetMigrationHistory()
+        {
+            var database = Client.GetDatabase(DatabaseName);
+            var migrationHistoryCollection = database.GetCollection<MigrationHistory>(MigrationsCollectionName);
+            return migrationHistoryCollection.Find(m => true).ToList();
+        }
+
+        #endregion
     }
 }

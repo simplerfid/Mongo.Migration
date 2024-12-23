@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-
+using Microsoft.Extensions.DependencyInjection;
 using Mongo.Migration.Exceptions;
 using Mongo.Migration.Services;
 using Mongo.Migration.Test.TestDoubles;
@@ -10,15 +10,8 @@ using Xunit;
 namespace Mongo.Migration.Test.Services
 {
     
-    internal class DocumentVersionService_when_determine_version : IntegrationTest
+    public class DocumentVersionService_when_determine_version : IntegrationBaseTest
     {
-        private IDocumentVersionService _service;
-
-        public DocumentVersionService_when_determine_version()
-        {
-            this._service = this._components.Get<IDocumentVersionService>();
-        }
-        
         [Fact]
         public void When_document_has_current_version_Then_current_version_is_set()
         {
@@ -26,7 +19,7 @@ namespace Mongo.Migration.Test.Services
             var document = new TestDocumentWithTwoMigrationMiddleVersion();
 
             // Act
-            this._service.DetermineVersion(document);
+            ServiceProvider.GetRequiredService<IDocumentVersionService>().DetermineVersion(document);
 
             // Assert
             document.Version.Should().Be("0.0.1");
@@ -39,7 +32,7 @@ namespace Mongo.Migration.Test.Services
             var document = new TestDocumentWithTwoMigrationHighestVersion();
 
             // Act
-            this._service.DetermineVersion(document);
+            ServiceProvider.GetRequiredService<IDocumentVersionService>().DetermineVersion(document);
 
             // Assert
             document.Version.Should().Be("0.0.2");
@@ -52,7 +45,7 @@ namespace Mongo.Migration.Test.Services
             var document = new TestDocumentWithTwoMigrationHighestVersion { Version = "0.0.1" };
 
             // Act// Act
-            Action checkAction = () => { this._service.DetermineVersion(document); };
+            Action checkAction = () => { ServiceProvider.GetRequiredService<IDocumentVersionService>().DetermineVersion(document); };
 
             // Assert
             checkAction.Should().Throw<VersionViolationException>();

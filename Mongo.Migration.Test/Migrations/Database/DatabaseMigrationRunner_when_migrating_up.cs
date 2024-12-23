@@ -1,37 +1,33 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
-
-using Mongo.Migration.Documents;
+using Microsoft.Extensions.DependencyInjection;
 using Mongo.Migration.Migrations.Database;
 using Mongo.Migration.Test.TestDoubles;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Mongo.Migration.Test.Migrations.Database
 {
     
-    internal class DatabaseMigrationRunner_when_migrating_up : DatabaseIntegrationTest
+    public class DatabaseMigrationRunner_when_migrating_up : IntegrationBaseTest
     {
-        private IDatabaseMigrationRunner _runner;
-
+        private const string MigrationsCollectionName = "_migrations";
         
-        public async Task SetUpAsync()
-        {
-            await base.OnSetUpAsync(DocumentVersion.Empty());
+        protected virtual string DatabaseName { get; set; } = "DatabaseMigration";
 
-            this._runner = this._components.Get<IDatabaseMigrationRunner>();
-        }
-
+        protected virtual string CollectionName { get; set; } = "Test";
         
-        public async Task TearDown()
-        {
-            await this.DisposeAsync();
-        }
-
         [Fact]
-        public void When_database_has_no_migrations_Then_all_migrations_are_used()
+        public async Task When_database_has_no_migrations_Then_all_migrations_are_used()
         {
             // Act
-            this._runner.Run(this._db);
+
+            var database = Client.GetDatabase(DatabaseName);
+            
+            ServiceProvider.GetRequiredService<IDatabaseMigrationRunner>().Run(database);
 
             // Assert
             var migrations = this.GetMigrationHistory();
@@ -42,13 +38,15 @@ namespace Mongo.Migration.Test.Migrations.Database
         }
 
         [Fact]
-        public void When_database_has_migrations_Then_latest_migrations_are_used()
+        public async Task When_database_has_migrations_Then_latest_migrations_are_used()
         {
             // Arrange
-            this.InsertMigrations(new DatabaseMigration[] { new TestDatabaseMigration_0_0_1(), new TestDatabaseMigration_0_0_2() });
+            await this.InsertMigrations(new DatabaseMigration[] { new TestDatabaseMigration_0_0_1(), new TestDatabaseMigration_0_0_2() });
 
+            var database = Client.GetDatabase(DatabaseName);
+            
             // Act
-            this._runner.Run(this._db);
+            ServiceProvider.GetRequiredService<IDatabaseMigrationRunner>().Run(database);
 
             // Assert
             var migrations = this.GetMigrationHistory();
@@ -57,14 +55,18 @@ namespace Mongo.Migration.Test.Migrations.Database
         }
 
         [Fact]
-        public void When_database_has_latest_version_Then_nothing_happens()
+        public async Task When_database_has_latest_version_Then_nothing_happens()
         {
             // Arrange
-            this.InsertMigrations(
+            
+            var database = Client.GetDatabase(DatabaseName);
+            
+            await this.InsertMigrations(
                 new DatabaseMigration[] { new TestDatabaseMigration_0_0_1(), new TestDatabaseMigration_0_0_2(), new TestDatabaseMigration_0_0_3() });
 
             // Act
-            this._runner.Run(this._db);
+            
+            ServiceProvider.GetRequiredService<IDatabaseMigrationRunner>().Run(database);
 
             // Assert
             var migrations = this.GetMigrationHistory();
@@ -73,5 +75,23 @@ namespace Mongo.Migration.Test.Migrations.Database
             migrations[1].Version.ToString().Should().BeEquivalentTo("0.0.2");
             migrations[2].Version.ToString().Should().BeEquivalentTo("0.0.3");
         }
+
+        #region private region
+
+        protected async Task InsertMigrations(IEnumerable<DatabaseMigration> migrations)
+        {
+            var database = Client.GetDatabase(DatabaseName);
+            var list = migrations.Select(m => new BsonDocument { { "MigrationId", m.GetType().ToString() }, { "Version", m.Version.ToString() } });
+            await database.GetCollection<BsonDocument>(MigrationsCollectionName).InsertManyAsync(list);
+        }
+
+        protected List<MigrationHistory> GetMigrationHistory()
+        {
+            var database = Client.GetDatabase(DatabaseName);
+            var migrationHistoryCollection = database.GetCollection<MigrationHistory>(MigrationsCollectionName);
+            return migrationHistoryCollection.Find(m => true).ToList();
+        }
+
+        #endregion
     }
 }

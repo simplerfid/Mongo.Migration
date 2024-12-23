@@ -27,7 +27,7 @@ namespace Mongo.Migration.Migrations.Database
                 collectionLocator,
                 migrationRunner)
         {
-            if (settings.ConnectionString == null && settings.Database == null || settings.ClientSettings == null)
+            if ((settings.ConnectionString == null || settings.Database == null) && settings.ClientSettings == null)
             {
                 throw new MongoMigrationNoMongoClientException();
             }

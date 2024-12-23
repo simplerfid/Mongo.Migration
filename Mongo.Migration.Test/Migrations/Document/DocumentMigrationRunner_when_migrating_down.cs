@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-
+using Microsoft.Extensions.DependencyInjection;
 using Mongo.Migration.Migrations.Document;
 using Mongo.Migration.Test.TestDoubles;
 
@@ -11,15 +11,8 @@ using Xunit;
 namespace Mongo.Migration.Test.Migrations.Document
 {
     
-    internal class DocumentMigrationRunner_when_migrating_down : IntegrationTest
+    public class DocumentMigrationRunner_when_migrating_down : IntegrationBaseTest
     {
-        private IDocumentMigrationRunner _runner;
-
-        public DocumentMigrationRunner_when_migrating_down()
-        {
-            _runner = this._components.Get<IDocumentMigrationRunner>();
-        }
-        
         [Fact]
         public void When_migrating_down_Then_all_migrations_are_used()
         {
@@ -31,7 +24,7 @@ namespace Mongo.Migration.Test.Migrations.Document
             };
 
             // Act
-            this._runner.Run(typeof(TestDocumentWithTwoMigration), document);
+            ServiceProvider.GetRequiredService<IDocumentMigrationRunner>().Run(typeof(TestDocumentWithTwoMigration), document);
 
             // Assert
             document.Names.ToList()[1].Should().Be("Dors");
@@ -50,7 +43,7 @@ namespace Mongo.Migration.Test.Migrations.Document
             };
 
             // Act
-            this._runner.Run(typeof(TestDocumentWithTwoMigrationMiddleVersion), document);
+            ServiceProvider.GetRequiredService<IDocumentMigrationRunner>().Run(typeof(TestDocumentWithTwoMigrationMiddleVersion), document);
 
             // Assert
             document.Names.ToList()[1].Should().Be("Doors");
