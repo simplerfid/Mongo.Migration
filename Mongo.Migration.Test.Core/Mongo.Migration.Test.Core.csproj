@@ -2,7 +2,7 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <OutputType>Library</OutputType>
-	  <TargetFrameworks>net6.0</TargetFrameworks>
+	  <TargetFramework>net8.0</TargetFramework>
 	  <Platforms>x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
     <PackageReference Include="NSubstitute" Version="5.0.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-    <PackageReference Include="Testcontainers.MongoDb" Version="4.1.0" />
+    <PackageReference Include="Testcontainers.MongoDb" Version="4.3.0" />
     <PackageReference Include="xunit.abstractions" Version="2.0.3" />
     <PackageReference Include="xunit.categories" Version="2.0.8" />
     <PackageReference Include="xunit.core" Version="2.9.2" />

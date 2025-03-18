@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using MongoDB.Driver;
 using Testcontainers.MongoDb;
 using Xunit;
 
@@ -20,7 +21,6 @@ public class MongoDbTestContainer : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await DisposingAsync(_container);
         await _container.DisposeAsync()
             .AsTask();
     }
@@ -28,22 +28,16 @@ public class MongoDbTestContainer : IAsyncLifetime
     protected  MongoDbContainer CreateInstance()
     {
         return new MongoDbBuilder()
-            .WithUsername(null)
-            .WithPassword(null)
             .WithImage("mongo")
-            .WithCommand("--replSet", "rs0")
             .Build();
     }
-    
-    protected virtual Task DisposingAsync(MongoDbContainer container)
-    {
-        return Task.CompletedTask;
-    }
-    
+
     protected async Task ContainerInitializedAsync(MongoDbContainer container)
     {
-        ConnectionString = container.GetConnectionString();
-        //TODO: This is workaround for MongoDb version 4.4 and should be removed after migrate to version 5
-        await container.ExecScriptAsync("rs.initiate({_id:'rs0', members:[{_id:0,host:'127.0.0.1:27017'}]})");
+        //TODO: This workaround for fix issue https://jira.mongodb.org/projects/CSHARP/issues/CSHARP-5445?filter=allissues
+        ConnectionString = new MongoUrlBuilder(container.GetConnectionString())
+        {
+            DirectConnection = true,
+        }.ToMongoUrl().ToString();
     }
 }

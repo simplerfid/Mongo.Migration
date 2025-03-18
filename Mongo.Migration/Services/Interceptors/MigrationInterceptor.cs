@@ -1,44 +1,61 @@
-﻿using Mongo.Migration.Documents;
+﻿using System;
+using Mongo.Migration.Documents;
 using Mongo.Migration.Migrations.Document;
-
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 
 namespace Mongo.Migration.Services.Interceptors
 {
-    internal class MigrationInterceptor<TDocument> : BsonClassMapSerializer<TDocument>
+    internal class MigrationInterceptor<TDocument> : IBsonSerializer<TDocument>
         where TDocument : class, IDocument
     {
         private readonly IDocumentVersionService _documentVersionService;
 
         private readonly IDocumentMigrationRunner _migrationRunner;
+        
+        private readonly BsonClassMapSerializer<TDocument> _innerSerializer;
+
+        private readonly Type _valueType = typeof(TDocument);
 
         public MigrationInterceptor(IDocumentMigrationRunner migrationRunner, IDocumentVersionService documentVersionService)
-            : base(BsonClassMap.LookupClassMap(typeof(TDocument)))
+        
         {
             this._migrationRunner = migrationRunner;
             this._documentVersionService = documentVersionService;
+            BsonClassMap classMap = BsonClassMap.LookupClassMap(_valueType);
+            this._innerSerializer = new BsonClassMapSerializer<TDocument>(classMap);
         }
 
-        public override void Serialize(BsonSerializationContext context, BsonSerializationArgs args, TDocument value)
+        public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, TDocument value)
         {
-            this._documentVersionService.DetermineVersion(value);
-
-            base.Serialize(context, args, value);
+            _documentVersionService.DetermineVersion(value);
+            _innerSerializer.Serialize(context, args, value);
         }
 
-        public override TDocument Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+        public TDocument Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
         {
             // TODO: Performance? LatestVersion, dont do anything
             var document = BsonDocumentSerializer.Instance.Deserialize(context);
 
-            this._migrationRunner.Run(typeof(TDocument), document);
+            this._migrationRunner.Run(_valueType, document);
 
             var migratedContext =
                 BsonDeserializationContext.CreateRoot(new BsonDocumentReader(document));
 
-            return base.Deserialize(migratedContext, args);
+            return _innerSerializer.Deserialize(migratedContext, args);
+        }
+
+        void IBsonSerializer.Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
+        {
+            Serialize(context, args, (TDocument)value);
+        }
+
+        public Type ValueType => _valueType;
+
+        object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+        {
+            return Deserialize(context, args);
         }
     }
 }

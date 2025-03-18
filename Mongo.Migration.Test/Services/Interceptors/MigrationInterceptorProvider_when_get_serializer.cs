@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
-
+using Microsoft.Extensions.DependencyInjection;
 using Mongo.Migration.Services.Interceptors;
 using Mongo.Migration.Test.TestDoubles;
 using Xunit;
@@ -8,25 +8,14 @@ using Xunit;
 namespace Mongo.Migration.Test.Services.Interceptors
 {
     
-    internal class MigrationInterceptorProvider_when_get_serializer : IntegrationTest
+    public class MigrationInterceptorProvider_when_get_serializer : IntegrationBaseTest
     {
         
-        public async Task SetUpAsync()
-        {
-            await this.SetUpAsync();
-        }
-
-        
-        public async Task TearDownAsync()
-        {
-            await this.DisposeAsync();
-        }
-
         [Fact]
         public void When_entity_is_document_Then_provide_serializer()
         {
             // Arrange 
-            var provider = this._components.Get<IMigrationInterceptorProvider>();
+            var provider = ServiceProvider.GetRequiredService<IMigrationInterceptorProvider>();
 
             // Act
             var serializer = provider.GetSerializer(typeof(TestDocumentWithOneMigration));
@@ -39,7 +28,7 @@ namespace Mongo.Migration.Test.Services.Interceptors
         public void When_entity_is_not_document_Then_provide_null()
         {
             // Arrange 
-            var provider = this._components.Get<IMigrationInterceptorProvider>();
+            var provider = ServiceProvider.GetRequiredService<IMigrationInterceptorProvider>();
 
             // Act
             var serializer = provider.GetSerializer(typeof(TestClass));

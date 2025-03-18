@@ -7,7 +7,7 @@ using Xunit;
 namespace Mongo.Migration.Test.Documents.Locators
 {
     
-    internal class VersionLocator_when_locate
+    public class VersionLocator_when_locate
     {
         [Fact]
         public void Then_find_current_version_of_document()

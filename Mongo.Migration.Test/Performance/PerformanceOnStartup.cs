@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using FluentAssertions;
 
-using Mongo.Migration.Startup.Static;
 using Mongo.Migration.Test.Core;
 using Mongo.Migration.Test.TestDoubles;
 
@@ -15,7 +14,7 @@ using Xunit;
 namespace Mongo.Migration.Test.Performance
 {
     
-    public class PerformanceTestOnStartup : IAsyncLifetime
+    public class PerformanceTestOnStartup : IntegrationBaseTest
     {
         private const int DOCUMENT_COUNT = 10000;
 
@@ -24,24 +23,6 @@ namespace Mongo.Migration.Test.Performance
         private const string COLLECTION_NAME = "Test";
 
         private const int TOLERANCE_MS = 2800;
-
-        private MongoClient _client;
-        
-        protected MongoDbTestContainer _container;
-
-        
-        public async Task InitializeAsync()
-        {
-            _container = new MongoDbTestContainer();
-            await _container.InitializeAsync();
-            this._client = new MongoClient(_container.ConnectionString);
-        }
-
-        public async Task DisposeAsync()
-        {
-            MongoMigrationClient.Reset();
-            this._client = null;
-        }
         
         [Fact]
         public void When_migrating_number_of_documents()
@@ -96,7 +77,7 @@ namespace Mongo.Migration.Test.Performance
                 documents.Add(document);
             }
 
-            this._client.GetDatabase(DATABASE_NAME).GetCollection<BsonDocument>(COLLECTION_NAME).InsertManyAsync(documents)
+            Client.GetDatabase(DATABASE_NAME).GetCollection<BsonDocument>(COLLECTION_NAME).InsertManyAsync(documents)
                 .Wait();
         }
 
@@ -104,13 +85,13 @@ namespace Mongo.Migration.Test.Performance
         {
             if (withVersion)
             {
-                var versionedCollectin = this._client.GetDatabase(DATABASE_NAME)
+                var versionedCollectin = Client.GetDatabase(DATABASE_NAME)
                     .GetCollection<TestDocumentWithTwoMigrationHighestVersion>(COLLECTION_NAME);
                 var versionedResult = versionedCollectin.FindAsync(_ => true).Result.ToListAsync().Result;
                 return;
             }
 
-            var collection = this._client.GetDatabase(DATABASE_NAME)
+            var collection = Client.GetDatabase(DATABASE_NAME)
                 .GetCollection<TestClass>(COLLECTION_NAME);
             var result = collection.FindAsync(_ => true).Result.ToListAsync().Result;
         }
@@ -123,7 +104,7 @@ namespace Mongo.Migration.Test.Performance
 
         private void ClearCollection()
         {
-            this._client.GetDatabase(DATABASE_NAME).DropCollection(COLLECTION_NAME);
+            Client.GetDatabase(DATABASE_NAME).DropCollection(COLLECTION_NAME);
         }
         
     }

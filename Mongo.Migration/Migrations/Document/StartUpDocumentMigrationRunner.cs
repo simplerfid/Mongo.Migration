@@ -34,10 +34,11 @@ namespace Mongo.Migration.Migrations.Document
                 documentVersionService,
                 migrationRunner)
         {
-            if (settings.ConnectionString == null && settings.Database == null || settings.ClientSettings == null)
+            if (settings.Database == null && (settings.ConnectionString == null || settings.ClientSettings == null))
             {
                 throw new MongoMigrationNoMongoClientException();
             }
+
 
             if (settings.ClientSettings != null)
             {
